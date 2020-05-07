@@ -169,13 +169,13 @@ func (c AppGwIngressController) MutateAppGateway(event events.Event, appGw *n.Ap
 
 	// Deployment Phase //
 	// ---------------- //
-	glog.V(3).Info("BEGIN AppGateway deployment")
-	defer glog.V(3).Info("END AppGateway deployment")
 
 	configJSON, _ := dumpSanitizedJSON(appGw, cbCtx.EnvVariables.EnableSaveConfigToFile, nil)
-	glog.V(5).Info(string(configJSON))
+	glog.V(5).Infof("Generated config:\n%s", string(configJSON))
 
 	// Initiate deployment
+	glog.V(3).Info("BEGIN AppGateway deployment")
+	defer glog.V(3).Info("END AppGateway deployment")
 	err = c.azClient.UpdateGateway(generatedAppGw)
 	if err != nil {
 		// Reset cache
