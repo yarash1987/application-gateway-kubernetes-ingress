@@ -107,18 +107,6 @@ func (c *appGwConfigBuilder) generateHealthProbe(backendID backendIdentifier) *n
 		probe.Path = to.StringPtr(backendID.Path.Path)
 	}
 
-	if backendID.Backend.ServicePort.String() == "443" {
-		probe.Protocol = n.HTTPS
-	}
-
-	// backend protocol take precedence over port
-	backendProtocol, err := annotations.BackendProtocol(backendID.Ingress)
-	if err == nil && backendProtocol == annotations.HTTPS {
-		probe.Protocol = n.HTTPS
-	} else if err == nil && backendProtocol == annotations.HTTP {
-		probe.Protocol = n.HTTP
-	}
-
 	k8sProbeForServiceContainer := c.getProbeForServiceContainer(service, backendID)
 	if k8sProbeForServiceContainer != nil {
 		if len(k8sProbeForServiceContainer.Handler.HTTPGet.Host) != 0 {
@@ -156,6 +144,18 @@ func (c *appGwConfigBuilder) generateHealthProbe(backendID backendIdentifier) *n
 				probe.UnhealthyThreshold = to.Int32Ptr(k8sProbeForServiceContainer.FailureThreshold)
 			}
 		}
+	}
+
+	if backendID.Backend.ServicePort.String() == "443" {
+		probe.Protocol = n.HTTPS
+	}
+
+	// backend protocol take precedence over port
+	backendProtocol, err := annotations.BackendProtocol(backendID.Ingress)
+	if err == nil && backendProtocol == annotations.HTTPS {
+		probe.Protocol = n.HTTPS
+	} else if err == nil && backendProtocol == annotations.HTTP {
+		probe.Protocol = n.HTTP
 	}
 
 	if probe.Path != nil {
